@@ -1,7 +1,8 @@
-﻿fastapi
+fastapi
 uvicorn
 pandas
 joblib
 pydantic
 scikit-learn==1.6.1
 pypdf
+python-multipart
