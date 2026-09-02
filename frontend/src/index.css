@@ -1,0 +1,93 @@
+﻿@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    background-color: #E8DCC8;
+    color: #b78c61;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+}
+
+/* Crema Marfil Luxury Neutral Palette System */
+.glass-panel {
+  background-color: #E0D4C0;
+  border: 1px solid #D4C4AC;
+  border-radius: 0.75rem;
+  box-shadow: 0 6px 20px rgba(76, 55, 40, 0.08);
+}
+
+.glass-card {
+  background-color: #F5EFE6;
+  border: 1px solid #D4C4AC;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 14px rgba(76, 55, 40, 0.06);
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-card:hover {
+  border-color: #C8B69A;
+  box-shadow: 0 8px 24px rgba(76, 55, 40, 0.12);
+}
+
+.glass-input {
+  background-color: #E8DCC8;
+  border: 1px solid #D4C4AC;
+  color: #2A221A;
+  border-radius: 0.5rem;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.glass-input:focus {
+  border-color: #9E6260;
+  box-shadow: 0 0 0 2px rgba(158, 98, 96, 0.2);
+  outline: none;
+}
+
+/* Range Slider Styling - Dusty Rose Accent */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  background: #D4C4AC;
+  border-radius: 9999px;
+  height: 6px;
+  outline: none;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #9E6260;
+  border: 2px solid #F5EFE6;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(76, 55, 40, 0.3);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+  background: #854F4D;
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #9E6260;
+  border: 2px solid #F5EFE6;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(127, 71, 30, 0.3);
+  transition: background-color 0.15s ease, transform 0.15s ease;
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
