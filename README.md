@@ -2,6 +2,12 @@
 
 PlaceIQ is a premium campus placement readiness and career intelligence platform that combines a machine learning placement predictor with career guidance, adaptive goal planning, job matching, resume analysis, and progress tracking.
 
+## Live Demo
+
+Try the deployed application: [PlaceIQ AI Placement Predictor](https://48088202cbd3b0.lhr.life/)
+
+The live interface brings the complete student journey into one workspace: assess placement readiness, test profile changes, identify skill gaps, get career guidance, match with jobs, analyze a resume, and track preparation progress.
+
 The project keeps the existing application functionality intact while presenting a warm luxury editorial design system built around cream, beige, and dusty rose tones.
 
 ## Overview
@@ -17,7 +23,89 @@ PlaceIQ helps students evaluate their readiness for campus placements by combini
 - Resume analysis
 - Progress and habit tracking
 
-## Live Local Deployment
+## Application Flow
+
+```mermaid
+flowchart TD
+	A[Student opens PlaceIQ] --> B[Enter academic and skill profile]
+	B --> C[Placement Predictor]
+	C --> D{Review readiness}
+	D -->|Explore outcomes| E[What-If Simulator]
+	D -->|Find weak areas| F[Skill Gap Analysis]
+	D -->|Plan preparation| G[Daily Goals and Progress]
+	F --> H[AI Career Assistant]
+	H --> G
+	B --> I[Upload resume]
+	I --> J[Resume Analyzer]
+	B --> K[Paste job description]
+	K --> L[Job Matcher]
+	G --> M[Improved profile]
+	M --> C
+```
+
+## Product Visualisation
+
+```mermaid
+flowchart LR
+	subgraph Inputs[Candidate Inputs]
+		P[Academic metrics]
+		S[Skills and projects]
+		R[Resume PDF]
+		J[Job description]
+	end
+
+	subgraph Intelligence[PlaceIQ Intelligence Layer]
+		ML[ML placement predictor]
+		SIM[Real-time what-if inference]
+		GAP[Readiness and skill-gap rules]
+		NLP[Resume and job analysis]
+	end
+
+	subgraph Outcomes[Actionable Outcomes]
+		FORECAST[Placement forecast]
+		PLAN[Adaptive goals]
+		COACH[Career coaching]
+		MATCH[Job match insights]
+		TRACK[Progress and streaks]
+	end
+
+	P --> ML
+	S --> ML
+	P --> SIM
+	S --> SIM
+	S --> GAP
+	R --> NLP
+	J --> NLP
+	ML --> FORECAST
+	SIM --> FORECAST
+	GAP --> PLAN
+	GAP --> COACH
+	NLP --> MATCH
+	PLAN --> TRACK
+	TRACK --> COACH
+```
+
+### Interface Screenshots
+
+The deployed experience includes the following primary views:
+
+| Placement Predictor                                      | What-If Simulator                                                 |
+| -------------------------------------------------------- | ----------------------------------------------------------------- |
+| Enter candidate metrics and view the placement forecast. | Adjust profile sliders and compare simulated probability changes. |
+
+To add the supplied browser captures to this section, place them in `docs/images/` with these names:
+
+- `placement-predictor.png`
+- `what-if-simulator.png`
+
+Then use the following Markdown directly below this table:
+
+```markdown
+![PlaceIQ Placement Predictor](docs/images/placement-predictor.png)
+![PlaceIQ What-If Simulator](docs/images/what-if-simulator.png)
+```
+
+## Local Deployment
 
 The frontend and backend are designed to run locally together:
 
@@ -177,7 +265,7 @@ This starts the backend and frontend together in new PowerShell sessions.
 
 ## Deployment Notes
 
-This project is intended for local deployment in a development environment and can be extended to cloud deployment later if required.
+The application is deployed at the live demo URL above and can also be run locally for development.
 
 The current runtime configuration uses:
 
