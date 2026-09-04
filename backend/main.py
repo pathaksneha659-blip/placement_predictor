@@ -505,11 +505,6 @@ def generate_daily_goals(user_data: dict) -> tuple[List[DailyGoalItem], int, int
     return goal_items, total_allocated, available_minutes, adaptive_mode, adaptive_msg
 
 
-@app.get("/")
-def root():
-    return {"message": "Placement Predictor API is running"}
-
-
 @app.get("/health")
 def health():
     return {"status": "healthy"}
@@ -616,3 +611,31 @@ def career_chat(request: CareerChatRequest):
         return process_career_chat(request)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Career chat processing failed: {str(e)}")
+
+
+FRONTEND_DIST = BASE_DIR.parent / "frontend" / "dist"
+if FRONTEND_DIST.exists():
+    from fastapi.staticfiles import StaticFiles
+    from fastapi.responses import FileResponse
+
+    assets_dir = FRONTEND_DIST / "assets"
+    if assets_dir.is_dir():
+        app.mount("/assets", StaticFiles(directory=assets_dir), name="assets")
+
+    @app.get("/")
+    async def serve_frontend_root():
+        return FileResponse(FRONTEND_DIST / "index.html")
+
+    @app.get("/{spa_path:path}")
+    async def serve_frontend_spa(spa_path: str):
+        if spa_path in {"health", "docs", "openapi.json", "redoc"}:
+            raise HTTPException(status_code=404)
+        file_path = FRONTEND_DIST / spa_path
+        if file_path.is_file():
+            return FileResponse(file_path)
+        return FileResponse(FRONTEND_DIST / "index.html")
+else:
+
+    @app.get("/")
+    def root():
+        return {"message": "Placement Predictor API is running", "docs": "/docs"}

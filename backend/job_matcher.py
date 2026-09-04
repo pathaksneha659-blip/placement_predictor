@@ -1,8 +1,8 @@
 import re
 from typing import List, Optional
 from pydantic import BaseModel, Field
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.metrics.pairwise import cosine_similarity
+from collections import Counter
+import math
 
 class JobMatchRequest(BaseModel):
     job_description: str = Field(..., description="Target Job Description text pasted by candidate")
@@ -69,11 +69,26 @@ def analyze_job_match(job_desc: str, profile_text: Optional[str] = None, user_sk
     matched_skills = [s for s in jd_skills if any(s.lower() == cs.lower() for cs in cand_skills)]
     missing_skills = [s for s in jd_skills if not any(s.lower() == cs.lower() for cs in cand_skills)]
 
-    # 4. TF-IDF + Cosine Similarity
+    # 4. Simple token frequency based cosine similarity (fallback when sklearn unavailable)
+    def _tokenize(text: str) -> list:
+        return re.findall(r"\w+", text.lower())
+
+    def _term_freq(tokens: list) -> dict:
+        return Counter(tokens)
+
+    def _cosine_similarity(freq1: dict, freq2: dict) -> float:
+        intersect = set(freq1.keys()) & set(freq2.keys())
+        dot = sum(freq1[t] * freq2[t] for t in intersect)
+        norm1 = math.sqrt(sum(v * v for v in freq1.values()))
+        norm2 = math.sqrt(sum(v * v for v in freq2.values()))
+        return dot / (norm1 * norm2) if norm1 and norm2 else 0.0
+
     try:
-        vectorizer = TfidfVectorizer(stop_words="english")
-        tfidf_matrix = vectorizer.fit_transform([jd_clean, profile_text])
-        cos_sim = float(cosine_similarity(tfidf_matrix[0:1], tfidf_matrix[1:2])[0][0])
+        tokens_jd = _tokenize(jd_clean)
+        tokens_profile = _tokenize(profile_text)
+        freq_jd = _term_freq(tokens_jd)
+        freq_profile = _term_freq(tokens_profile)
+        cos_sim = _cosine_similarity(freq_jd, freq_profile)
     except Exception:
         cos_sim = 0.50
 

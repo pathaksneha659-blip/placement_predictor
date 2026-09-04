@@ -3,6 +3,7 @@ uvicorn
 pandas
 joblib
 pydantic
-scikit-learn==1.6.1
+numpy
+pyngrok
 pypdf
 python-multipart
