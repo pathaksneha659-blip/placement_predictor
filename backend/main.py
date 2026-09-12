@@ -3,7 +3,7 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException, UploadFile, File
-from fastapi.middleware.cors import CORSMiddleware
+import os
 import joblib
 import pandas as pd
 import pypdf
@@ -99,7 +99,7 @@ app = FastAPI(title="Placement Predictor API")
 # Enable CORS for frontend clients
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[os.getenv("FRONTEND_URL", "*")],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

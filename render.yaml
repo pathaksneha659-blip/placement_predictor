@@ -7,6 +7,11 @@ services:
     envVars:
       - key: PYTHON_VERSION
         value: 3.10.12
+      - key: FRONTEND_URL
+        fromService:
+          type: web
+          name: placeiq-frontend
+          property: host
 
   - type: web
     name: placeiq-frontend

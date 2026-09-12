@@ -6,4 +6,5 @@ pydantic
 numpy
 pyngrok
 pypdf
+gunicorn
 python-multipart
