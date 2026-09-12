@@ -3,6 +3,7 @@ import sys
 from pathlib import Path
 from typing import List, Optional
 from fastapi import FastAPI, HTTPException, UploadFile, File
+from fastapi.middleware.cors import CORSMiddleware
 import os
 import joblib
 import pandas as pd
