@@ -6,22 +6,34 @@ export default function Header() {
   const [isBackendHealthy, setIsBackendHealthy] = useState(null);
 
   useEffect(() => {
+    let isMounted = true;
+    let timerId = null;
+
     const verifyApi = async () => {
       try {
         const res = await checkHealth();
-        if (res.status === "healthy") {
-          setIsBackendHealthy(true);
-        } else {
-          setIsBackendHealthy(false);
+        if (isMounted) {
+          setIsBackendHealthy(res?.status === "healthy");
         }
       } catch (err) {
-        setIsBackendHealthy(false);
+        if (isMounted) {
+          setIsBackendHealthy(false);
+        }
+      } finally {
+        if (isMounted) {
+          // Poll faster if not yet healthy to detect when free-tier backend finishes waking up
+          const nextInterval = isBackendHealthy ? 12000 : 4000;
+          timerId = setTimeout(verifyApi, nextInterval);
+        }
       }
     };
+
     verifyApi();
-    const interval = setInterval(verifyApi, 15000);
-    return () => clearInterval(interval);
-  }, []);
+    return () => {
+      isMounted = false;
+      if (timerId) clearTimeout(timerId);
+    };
+  }, [isBackendHealthy]);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#D8C8B5] bg-[#EDE3D4]/95 backdrop-blur-md shadow-soft">
@@ -52,18 +64,17 @@ export default function Header() {
             <FaServer className="text-[#968576] text-[10px] sm:text-xs flex-shrink-0" />
             <span className="text-[#5B4A3D] hidden lg:inline">API:</span>
             {isBackendHealthy === null ? (
-              <span className="flex items-center text-[#968576] space-x-1">
+              <span className="flex items-center text-amber-700 font-semibold space-x-1 sm:space-x-1.5" title="Connecting to backend service...">
                 <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
-                <span className="hidden xs:inline">Connecting</span>
+                <span>Connecting</span>
               </span>
             ) : isBackendHealthy ? (
-              <span className="flex items-center text-[#71856B] font-semibold space-x-1 sm:space-x-1.5">
+              <span className="flex items-center text-[#71856B] font-semibold space-x-1 sm:space-x-1.5" title="Backend connected and healthy">
                 <span className="h-2 w-2 rounded-full bg-[#71856B]"></span>
-                <span className="hidden sm:inline">Online (Port 8000)</span>
-                <span className="sm:hidden">Online</span>
+                <span>Online</span>
               </span>
             ) : (
-              <span className="flex items-center text-[#A65D5D] font-semibold space-x-1 sm:space-x-1.5">
+              <span className="flex items-center text-[#A65D5D] font-semibold space-x-1 sm:space-x-1.5" title="Backend waking up or unreachable">
                 <span className="h-2 w-2 rounded-full bg-[#A65D5D]"></span>
                 <span>Offline</span>
               </span>

@@ -22,5 +22,7 @@ services:
         source: /*
         destination: /index.html
     envVars:
+      - key: VITE_API_URL
+        value: https://placement-predictor-2-8o1t.onrender.com
       - key: VITE_API_BASE_URL
         value: https://placement-predictor-2-8o1t.onrender.com
