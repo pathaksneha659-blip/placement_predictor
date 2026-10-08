@@ -27,39 +27,31 @@ PORT = int(os.getenv("PORT", "8000"))
 HOST = os.getenv("HOST", "0.0.0.0")
 
 # CORS and Environment
-FRONTEND_URL = os.getenv("FRONTEND_URL", "*")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "https://placement-predictor-1-ku2k.onrender.com")
 ALLOWED_ORIGINS_RAW = os.getenv("ALLOWED_ORIGINS", "")
 
-_parsed_origins = set()
-for _default_origin in [
+_parsed_origins = [
+    "https://placement-predictor-1-ku2k.onrender.com",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
     "http://localhost:5174",
     "http://127.0.0.1:5174",
-    "https://placement-predictor-1-ku2k.onrender.com",
-]:
-    _parsed_origins.add(_default_origin)
-    _parsed_origins.add(_default_origin.rstrip("/"))
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+]
+
+if FRONTEND_URL and FRONTEND_URL != "*":
+    _cleaned = FRONTEND_URL.strip().rstrip("/")
+    if _cleaned and _cleaned not in _parsed_origins:
+        _parsed_origins.append(_cleaned)
 
 if ALLOWED_ORIGINS_RAW:
     for _orig in ALLOWED_ORIGINS_RAW.split(","):
-        _cleaned = _orig.strip()
-        if _cleaned:
-            _parsed_origins.add(_cleaned)
-            _parsed_origins.add(_cleaned.rstrip("/"))
+        _cleaned = _orig.strip().rstrip("/")
+        if _cleaned and _cleaned not in _parsed_origins:
+            _parsed_origins.append(_cleaned)
 
-if FRONTEND_URL and FRONTEND_URL != "*":
-    _cleaned = FRONTEND_URL.strip()
-    _parsed_origins.add(_cleaned)
-    _parsed_origins.add(_cleaned.rstrip("/"))
-
-# If wildcard is explicitly specified or by default for public API
-if "*" in ALLOWED_ORIGINS_RAW or FRONTEND_URL == "*" or not ALLOWED_ORIGINS_RAW:
-    ALLOWED_ORIGINS = ["*"]
-else:
-    ALLOWED_ORIGINS = sorted(list(_parsed_origins))
+ALLOWED_ORIGINS = _parsed_origins
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 

@@ -33,8 +33,23 @@ export const getDefaults = async () => {
 };
 
 export const checkHealth = async () => {
-  const response = await api.get("/health");
-  return response.data;
+  try {
+    const response = await api.get("/health");
+    return response.data;
+  } catch (axiosErr) {
+    try {
+      const res = await fetch(`${API_BASE_URL}/health`, {
+        method: "GET",
+        headers: { "Accept": "application/json" }
+      });
+      if (res.ok) {
+        return await res.json();
+      }
+    } catch {
+      // Both attempts failed
+    }
+    throw axiosErr;
+  }
 };
 
 export const analyzeResume = async (file) => {

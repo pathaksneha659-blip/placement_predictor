@@ -18,13 +18,13 @@ app = FastAPI(
 )
 
 # Enable CORS for frontend clients with standard compliance
-is_wildcard = "*" in ALLOWED_ORIGINS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
-    allow_credentials=not is_wildcard,
-    allow_methods=["*"],
+    allow_credentials=True,
+    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH"],
     allow_headers=["*"],
+    expose_headers=["*"],
 )
 
 # Include API Router

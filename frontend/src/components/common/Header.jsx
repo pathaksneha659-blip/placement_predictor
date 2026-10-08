@@ -7,7 +7,6 @@ export default function Header() {
 
   useEffect(() => {
     let isMounted = true;
-    let timerId = null;
 
     const verifyApi = async () => {
       try {
@@ -19,21 +18,16 @@ export default function Header() {
         if (isMounted) {
           setIsBackendHealthy(false);
         }
-      } finally {
-        if (isMounted) {
-          // Poll faster if not yet healthy to detect when free-tier backend finishes waking up
-          const nextInterval = isBackendHealthy ? 12000 : 4000;
-          timerId = setTimeout(verifyApi, nextInterval);
-        }
       }
     };
 
     verifyApi();
+    const intervalId = setInterval(verifyApi, 8000);
     return () => {
       isMounted = false;
-      if (timerId) clearTimeout(timerId);
+      clearInterval(intervalId);
     };
-  }, [isBackendHealthy]);
+  }, []);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#D8C8B5] bg-[#EDE3D4]/95 backdrop-blur-md shadow-soft">
@@ -60,23 +54,22 @@ export default function Header() {
 
         {/* Backend Status Indicator & Swagger Link */}
         <div className="flex items-center space-x-1.5 sm:space-x-3 flex-shrink-0">
-          <div className="flex items-center space-x-1.5 px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#FBF8F2] border border-[#D8C8B5] text-[11px] sm:text-xs">
+          <div className="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#FBF8F2] border border-[#D8C8B5] text-[11px] sm:text-xs font-semibold">
             <FaServer className="text-[#968576] text-[10px] sm:text-xs flex-shrink-0" />
-            <span className="text-[#5B4A3D] hidden lg:inline">API:</span>
             {isBackendHealthy === null ? (
-              <span className="flex items-center text-amber-700 font-semibold space-x-1 sm:space-x-1.5" title="Connecting to backend service...">
+              <span className="flex items-center text-amber-700 space-x-1.5" title="Connecting to backend service...">
                 <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
-                <span>Connecting</span>
+                <span>Connecting...</span>
               </span>
             ) : isBackendHealthy ? (
-              <span className="flex items-center text-[#71856B] font-semibold space-x-1 sm:space-x-1.5" title="Backend connected and healthy">
+              <span className="flex items-center text-[#71856B] space-x-1.5" title="Backend connected and healthy">
                 <span className="h-2 w-2 rounded-full bg-[#71856B]"></span>
-                <span>Online</span>
+                <span>API Online</span>
               </span>
             ) : (
-              <span className="flex items-center text-[#A65D5D] font-semibold space-x-1 sm:space-x-1.5" title="Backend waking up or unreachable">
+              <span className="flex items-center text-[#A65D5D] space-x-1.5" title="Backend waking up or unreachable">
                 <span className="h-2 w-2 rounded-full bg-[#A65D5D]"></span>
-                <span>Offline</span>
+                <span>API Offline</span>
               </span>
             )}
           </div>
