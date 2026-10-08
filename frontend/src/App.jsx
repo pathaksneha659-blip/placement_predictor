@@ -68,9 +68,9 @@ export default function App() {
           setError(detail.toString());
         }
       } else if (err.code === "ECONNABORTED") {
-        setError("Request timed out. Please check if the FastAPI server is running on http://127.0.0.1:8000.");
+        setError("Request timed out. The backend server might be waking up from sleep. Please wait a few seconds and try again.");
       } else {
-        setError("Failed to connect to FastAPI backend at http://127.0.0.1:8000. Ensure the server is running with uvicorn.");
+        setError("Unable to reach the prediction backend service. Please check your network or verify the backend is active.");
       }
     } finally {
       setLoading(false);

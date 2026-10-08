@@ -1,13 +1,30 @@
 import axios from "axios";
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "";
+export const getApiBaseUrl = () => {
+  if (import.meta.env.VITE_API_BASE_URL) {
+    return import.meta.env.VITE_API_BASE_URL.replace(/\/+$/, "");
+  }
+  if (typeof window !== "undefined") {
+    const { hostname } = window.location;
+    // Local development: use relative path so Vite proxy forwards to local backend
+    if (hostname === "localhost" || hostname === "127.0.0.1") {
+      return "";
+    }
+    // Production cloud deployment (Render, Vercel, etc.): default to live backend service
+    return "https://placement-predictor-2-8o1t.onrender.com";
+  }
+  return "";
+};
+
+export const API_BASE_URL = getApiBaseUrl();
+export const DOCS_URL = API_BASE_URL ? `${API_BASE_URL}/docs` : "http://127.0.0.1:8000/docs";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     "Content-Type": "application/json",
   },
-  timeout: 15000,
+  timeout: 60000, // 60 seconds to accommodate Render free-tier cold starts
 });
 
 export const predictPlacement = async (formData) => {

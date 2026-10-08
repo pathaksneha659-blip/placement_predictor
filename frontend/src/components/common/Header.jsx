@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { FaBrain, FaServer, FaExternalLinkAlt } from "react-icons/fa";
-import { checkHealth } from "../../services/api";
+import { checkHealth, DOCS_URL } from "../../services/api";
 
 export default function Header() {
   const [isBackendHealthy, setIsBackendHealthy] = useState(null);
@@ -71,7 +71,7 @@ export default function Header() {
           </div>
 
           <a
-            href="http://127.0.0.1:8000/docs"
+            href={DOCS_URL}
             target="_blank"
             rel="noreferrer"
             className="text-[11px] sm:text-xs px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg font-semibold text-[#30241D] hover:text-[#9F595B] bg-[#FBF8F2] hover:bg-[#F5EFE6] border border-[#D8C8B5] transition shadow-card flex items-center space-x-1"

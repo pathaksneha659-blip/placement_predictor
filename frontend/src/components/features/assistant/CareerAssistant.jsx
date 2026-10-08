@@ -81,7 +81,7 @@ export default function CareerAssistant({ currentProfile = null, currentResult =
         ...prev,
         {
           sender: "bot",
-          text: "I experienced a connection error querying the backend. Please check if the FastAPI server is running on http://127.0.0.1:8000.",
+          text: "I experienced a connection issue reaching the career service. If the server is spinning up, please wait a moment and try again.",
           time: botTime,
           isLlm: false,
           isError: true,
