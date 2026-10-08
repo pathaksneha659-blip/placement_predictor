@@ -1,8 +1,11 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+const apiTarget = process.env.VITE_API_URL || 'https://placement-predictor-2-8o1t.onrender.com';
+
 // https://vite.dev/config/
 export default defineConfig({
+  base: '/',
   plugins: [react()],
   server: {
     port: 5173,
@@ -13,12 +16,12 @@ export default defineConfig({
       interval: 1000
     },
     proxy: {
-      '/predict': 'http://127.0.0.1:8000',
-      '/health': 'http://127.0.0.1:8000',
-      '/defaults': 'http://127.0.0.1:8000',
-      '/analyze-resume': 'http://127.0.0.1:8000',
-      '/match-job': 'http://127.0.0.1:8000',
-      '/career-chat': 'http://127.0.0.1:8000',
+      '/predict': apiTarget,
+      '/health': apiTarget,
+      '/defaults': apiTarget,
+      '/analyze-resume': apiTarget,
+      '/match-job': apiTarget,
+      '/career-chat': apiTarget,
     }
   },
   preview: {
@@ -27,4 +30,3 @@ export default defineConfig({
     allowedHosts: true
   }
 })
-
