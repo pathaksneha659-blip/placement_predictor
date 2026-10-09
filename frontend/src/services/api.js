@@ -16,9 +16,6 @@ export const DOCS_URL = `${API_BASE_URL}/docs`;
 
 const api = axios.create({
   baseURL: API_BASE_URL,
-  headers: {
-    "Content-Type": "application/json",
-  },
   timeout: 60000, // 60 seconds to accommodate Render free-tier cold starts
 });
 
@@ -33,21 +30,25 @@ export const getDefaults = async () => {
 };
 
 export const checkHealth = async () => {
+  // 1. Try native fetch first (CORS-safelisted GET request without preflight)
+  try {
+    const res = await fetch(`${API_BASE_URL}/health`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return data;
+    }
+  } catch {
+    // Native fetch failed, try Axios
+  }
+
+  // 2. Fallback to axios instance
   try {
     const response = await api.get("/health");
     return response.data;
   } catch (axiosErr) {
-    try {
-      const res = await fetch(`${API_BASE_URL}/health`, {
-        method: "GET",
-        headers: { "Accept": "application/json" }
-      });
-      if (res.ok) {
-        return await res.json();
-      }
-    } catch {
-      // Both attempts failed
-    }
     throw axiosErr;
   }
 };

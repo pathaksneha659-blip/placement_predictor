@@ -1,40 +1,52 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { FaBrain, FaServer, FaExternalLinkAlt } from "react-icons/fa";
 import { checkHealth, DOCS_URL } from "../../services/api";
 
 export default function Header() {
   const [isBackendHealthy, setIsBackendHealthy] = useState(null);
+  const isHealthyRef = useRef(null);
+  isHealthyRef.current = isBackendHealthy;
+
+  const triggerHealthCheck = async (isMounted = true) => {
+    try {
+      const res = await checkHealth();
+      if (isMounted) {
+        const healthy = res?.status === "healthy" || res?.model_loaded === true;
+        setIsBackendHealthy(healthy);
+      }
+    } catch {
+      if (isMounted) {
+        setIsBackendHealthy(false);
+      }
+    }
+  };
 
   useEffect(() => {
     let isMounted = true;
     let timerId = null;
 
-    const verifyApi = async () => {
-      try {
-        const res = await checkHealth();
-        if (isMounted) {
-          setIsBackendHealthy(res?.status === "healthy");
-        }
-      } catch (err) {
-        if (isMounted) {
-          setIsBackendHealthy(false);
-        }
-      } finally {
-        if (isMounted) {
-          // Poll faster (4s) during initial connect or offline state to quickly detect Render wake-up,
-          // then throttle to 15s once confirmed healthy.
-          const delay = isBackendHealthy ? 15000 : 4000;
-          timerId = setTimeout(verifyApi, delay);
-        }
+    const poll = async () => {
+      await triggerHealthCheck(isMounted);
+      if (isMounted) {
+        // Fast polling (3.5s) while offline/connecting to immediately register boot-up;
+        // throttled to 15s once verified healthy.
+        const delay = isHealthyRef.current ? 15000 : 3500;
+        timerId = setTimeout(poll, delay);
       }
     };
 
-    verifyApi();
+    poll();
+
     return () => {
       isMounted = false;
       if (timerId) clearTimeout(timerId);
     };
-  }, [isBackendHealthy]);
+  }, []);
+
+  const handleBadgeClick = () => {
+    setIsBackendHealthy(null);
+    triggerHealthCheck(true);
+  };
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#D8C8B5] bg-[#EDE3D4]/95 backdrop-blur-md shadow-soft">
@@ -61,7 +73,11 @@ export default function Header() {
 
         {/* Backend Status Indicator & Swagger Link */}
         <div className="flex items-center space-x-1.5 sm:space-x-3 flex-shrink-0">
-          <div className="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#FBF8F2] border border-[#D8C8B5] text-[11px] sm:text-xs font-semibold">
+          <div
+            onClick={handleBadgeClick}
+            className="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#FBF8F2] border border-[#D8C8B5] text-[11px] sm:text-xs font-semibold cursor-pointer hover:bg-[#F5EFE6] transition"
+            title="Click to refresh backend status"
+          >
             <FaServer className="text-[#968576] text-[10px] sm:text-xs flex-shrink-0" />
             {isBackendHealthy === null ? (
               <span className="flex items-center text-amber-700 space-x-1.5" title="Connecting to backend service...">
@@ -74,7 +90,7 @@ export default function Header() {
                 <span>API Online</span>
               </span>
             ) : (
-              <span className="flex items-center text-[#A65D5D] space-x-1.5" title="Backend waking up or unreachable">
+              <span className="flex items-center text-[#A65D5D] space-x-1.5" title="Backend waking up or unreachable. Click to retry.">
                 <span className="h-2 w-2 rounded-full bg-[#A65D5D]"></span>
                 <span>API Offline</span>
               </span>
