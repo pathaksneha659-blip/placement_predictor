@@ -7,6 +7,7 @@ export default function Header() {
 
   useEffect(() => {
     let isMounted = true;
+    let timerId = null;
 
     const verifyApi = async () => {
       try {
@@ -18,16 +19,22 @@ export default function Header() {
         if (isMounted) {
           setIsBackendHealthy(false);
         }
+      } finally {
+        if (isMounted) {
+          // Poll faster (4s) during initial connect or offline state to quickly detect Render wake-up,
+          // then throttle to 15s once confirmed healthy.
+          const delay = isBackendHealthy ? 15000 : 4000;
+          timerId = setTimeout(verifyApi, delay);
+        }
       }
     };
 
     verifyApi();
-    const intervalId = setInterval(verifyApi, 8000);
     return () => {
       isMounted = false;
-      clearInterval(intervalId);
+      if (timerId) clearTimeout(timerId);
     };
-  }, []);
+  }, [isBackendHealthy]);
 
   return (
     <header className="sticky top-0 z-40 w-full border-b border-[#D8C8B5] bg-[#EDE3D4]/95 backdrop-blur-md shadow-soft">

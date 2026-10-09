@@ -32,6 +32,7 @@ ALLOWED_ORIGINS_RAW = os.getenv("ALLOWED_ORIGINS", "")
 
 _parsed_origins = [
     "https://placement-predictor-1-ku2k.onrender.com",
+    "http://placement-predictor-1-ku2k.onrender.com",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
     "http://localhost:5174",
