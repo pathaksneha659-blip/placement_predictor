@@ -4,7 +4,7 @@ PlaceIQ is a premium campus placement readiness and career intelligence platform
 
 ## Live Demo
 
-Try the deployed application: [PlaceIQ AI Placement Predictor](https://48088202cbd3b0.lhr.life/)
+Try the deployed application: [PlaceIQ AI Placement Predictor](https://placement-predictor-1-ku2k.onrender.com/)
 
 The live interface brings the complete student journey into one workspace: assess placement readiness, test profile changes, identify skill gaps, get career guidance, match with jobs, analyze a resume, and track preparation progress.
 
@@ -109,9 +109,8 @@ Then use the following Markdown directly below this table:
 
 The frontend and backend are designed to run locally together:
 
-- Frontend: http://localhost:5173
-- FastAPI backend: http://127.0.0.1:8000
-- Swagger docs: http://127.0.0.1:8000/docs
+- Frontend: https://placement-predictor-1-ku2k.onrender.com/
+- FastAPI backend: https://placement-predictor-2-8o1t.onrender.com/
 
 ## Features
 

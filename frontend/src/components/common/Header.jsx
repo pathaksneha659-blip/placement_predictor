@@ -1,36 +1,56 @@
 import React, { useEffect, useState, useRef } from "react";
 import { FaBrain, FaServer, FaExternalLinkAlt } from "react-icons/fa";
-import { checkHealth, DOCS_URL } from "../../services/api";
+import { checkHealth, DOCS_URL, subscribeApiStatus } from "../../services/api";
+
+const MAX_CONNECTING_RETRIES = 8; // ~32-35s grace period for Render cold boot
 
 export default function Header() {
-  const [isBackendHealthy, setIsBackendHealthy] = useState(null);
-  const isHealthyRef = useRef(null);
-  isHealthyRef.current = isBackendHealthy;
+  // Status states: "connecting" | "online" | "offline"
+  const [status, setStatus] = useState("connecting");
+  const failureCountRef = useRef(0);
+  const isMountedRef = useRef(true);
 
-  const triggerHealthCheck = async (isMounted = true) => {
+  const runHealthCheck = async () => {
     try {
       const res = await checkHealth();
-      if (isMounted) {
-        const healthy = res?.status === "healthy" || res?.model_loaded === true;
-        setIsBackendHealthy(healthy);
+      if (!isMountedRef.current) return;
+      if (res?.status === "healthy" || res?.model_loaded === true) {
+        failureCountRef.current = 0;
+        setStatus("online");
+      } else {
+        throw new Error("Unexpected health response");
       }
     } catch {
-      if (isMounted) {
-        setIsBackendHealthy(false);
+      if (!isMountedRef.current) return;
+      failureCountRef.current += 1;
+      // Only transition to offline if we exceeded all retries (genuine backend failure)
+      if (failureCountRef.current >= MAX_CONNECTING_RETRIES) {
+        setStatus("offline");
+      } else {
+        // While retrying during cold start, stay in "connecting"
+        setStatus((prev) => (prev === "online" ? "connecting" : prev));
       }
     }
   };
 
   useEffect(() => {
-    let isMounted = true;
+    isMountedRef.current = true;
     let timerId = null;
 
+    // Listen to real application events (e.g., successful /predict call confirms backend online)
+    const unsubscribe = subscribeApiStatus((newStatus) => {
+      if (isMountedRef.current && newStatus === "online") {
+        failureCountRef.current = 0;
+        setStatus("online");
+      }
+    });
+
     const poll = async () => {
-      await triggerHealthCheck(isMounted);
-      if (isMounted) {
-        // Fast polling (3.5s) while offline/connecting to immediately register boot-up;
-        // throttled to 15s once verified healthy.
-        const delay = isHealthyRef.current ? 15000 : 3500;
+      await runHealthCheck();
+      if (isMountedRef.current) {
+        // Poll every 4s while connecting/offline (rapid detection of wake-up);
+        // throttle to 15s once confirmed online.
+        const delay = failureCountRef.current === 0 ? 15000 : 4000;
         timerId = setTimeout(poll, delay);
       }
     };
@@ -38,14 +58,16 @@ export default function Header() {
     poll();
 
     return () => {
-      isMounted = false;
+      isMountedRef.current = false;
+      unsubscribe();
       if (timerId) clearTimeout(timerId);
     };
   }, []);
 
   const handleBadgeClick = () => {
-    setIsBackendHealthy(null);
-    triggerHealthCheck(true);
+    failureCountRef.current = 0;
+    setStatus("connecting");
+    runHealthCheck();
   };
 
   return (
@@ -75,22 +97,28 @@ export default function Header() {
         <div className="flex items-center space-x-1.5 sm:space-x-3 flex-shrink-0">
           <div
             onClick={handleBadgeClick}
-            className="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#FBF8F2] border border-[#D8C8B5] text-[11px] sm:text-xs font-semibold cursor-pointer hover:bg-[#F5EFE6] transition"
-            title="Click to refresh backend status"
+            className="flex items-center space-x-1.5 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#FBF8F2] border border-[#D8C8B5] text-[11px] sm:text-xs font-semibold cursor-pointer hover:bg-[#F5EFE6] transition shadow-card"
+            title={
+              status === "online"
+                ? "Backend connected and healthy"
+                : status === "connecting"
+                ? "Connecting to backend service (waking up if sleeping)... Click to re-check."
+                : "Backend unreachable after retries. Click to retry."
+            }
           >
             <FaServer className="text-[#968576] text-[10px] sm:text-xs flex-shrink-0" />
-            {isBackendHealthy === null ? (
-              <span className="flex items-center text-amber-700 space-x-1.5" title="Connecting to backend service...">
-                <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
-                <span>Connecting...</span>
-              </span>
-            ) : isBackendHealthy ? (
-              <span className="flex items-center text-[#71856B] space-x-1.5" title="Backend connected and healthy">
+            {status === "online" ? (
+              <span className="flex items-center text-[#71856B] space-x-1.5">
                 <span className="h-2 w-2 rounded-full bg-[#71856B]"></span>
                 <span>API Online</span>
               </span>
+            ) : status === "connecting" ? (
+              <span className="flex items-center text-amber-700 space-x-1.5">
+                <span className="h-2 w-2 rounded-full bg-amber-500 animate-pulse"></span>
+                <span>Connecting...</span>
+              </span>
             ) : (
-              <span className="flex items-center text-[#A65D5D] space-x-1.5" title="Backend waking up or unreachable. Click to retry.">
+              <span className="flex items-center text-[#A65D5D] space-x-1.5">
                 <span className="h-2 w-2 rounded-full bg-[#A65D5D]"></span>
                 <span>API Offline</span>
               </span>

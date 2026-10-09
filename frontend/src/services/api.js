@@ -14,10 +14,37 @@ export const getApiBaseUrl = () => {
 export const API_BASE_URL = getApiBaseUrl();
 export const DOCS_URL = `${API_BASE_URL}/docs`;
 
+// Event listeners for global API health / success notifications
+const statusListeners = new Set();
+
+export const subscribeApiStatus = (callback) => {
+  statusListeners.add(callback);
+  return () => statusListeners.delete(callback);
+};
+
+export const notifyApiStatus = (status) => {
+  statusListeners.forEach((cb) => {
+    try {
+      cb(status);
+    } catch {}
+  });
+};
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   timeout: 60000, // 60 seconds to accommodate Render free-tier cold starts
 });
+
+// Interceptor: Any successful response from the backend confirms it is online
+api.interceptors.response.use(
+  (response) => {
+    notifyApiStatus("online");
+    return response;
+  },
+  (error) => {
+    return Promise.reject(error);
+  }
+);
 
 export const predictPlacement = async (formData) => {
   const response = await api.post("/predict", formData);
@@ -30,23 +57,36 @@ export const getDefaults = async () => {
 };
 
 export const checkHealth = async () => {
+  // Use timestamp query param to completely bust browser and edge caching on GET
+  const timestamp = Date.now();
+  const url = `${API_BASE_URL}/health?_t=${timestamp}`;
+
   // 1. Try native fetch first (CORS-safelisted GET request without preflight)
   try {
-    const res = await fetch(`${API_BASE_URL}/health`, {
+    const res = await fetch(url, {
       method: "GET",
-      headers: { Accept: "application/json" },
+      headers: {
+        Accept: "application/json",
+        "Cache-Control": "no-cache",
+      },
+      cache: "no-store",
     });
     if (res.ok) {
       const data = await res.json();
+      notifyApiStatus("online");
       return data;
     }
-  } catch {
-    // Native fetch failed, try Axios
+    throw new Error(`Health fetch returned status ${res.status}`);
+  } catch (fetchErr) {
+    // Fallback to axios instance with timeout
   }
 
   // 2. Fallback to axios instance
   try {
-    const response = await api.get("/health");
+    const response = await api.get(`/health?_t=${timestamp}`, {
+      headers: { "Cache-Control": "no-cache" },
+    });
+    notifyApiStatus("online");
     return response.data;
   } catch (axiosErr) {
     throw axiosErr;
